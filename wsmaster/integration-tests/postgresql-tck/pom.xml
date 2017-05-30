@@ -108,6 +108,22 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
+            <artifactId>che-core-api-system</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.che.core</groupId>
+            <artifactId>che-core-api-system</artifactId>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.che.core</groupId>
+            <artifactId>che-core-api-system-shared</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.che.core</groupId>
             <artifactId>che-core-api-user</artifactId>
             <scope>test</scope>
         </dependency>
@@ -225,7 +241,8 @@
                                         che-core-api-user,
                                         che-core-api-ssh,
                                         che-core-api-machine,
-                                        che-core-api-workspace</includeArtifactIds>
+                                        che-core-api-workspace,
+                                        che-core-api-system</includeArtifactIds>
                                     <includeScope>test</includeScope>
                                     <includeClassifiers>tests</includeClassifiers>
                                 </configuration>

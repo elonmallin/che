@@ -62,6 +62,9 @@ import org.eclipse.che.core.db.schema.SchemaInitializer;
 import org.eclipse.che.core.db.schema.impl.flyway.FlywaySchemaInitializer;
 import org.eclipse.che.security.PasswordEncryptor;
 import org.eclipse.che.security.SHA512PasswordEncryptor;
+import org.eclipse.che.spi.system.server.SystemPropertyDao;
+import org.eclipse.che.spi.system.server.jpa.JpaSystemPropertyDao;
+import org.eclipse.che.spi.system.server.model.impl.SystemPropertyImpl;
 import org.postgresql.Driver;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.slf4j.Logger;
@@ -117,7 +120,8 @@ public class PostgreSqlTckModule extends TckModule {
                                                                 CommandImpl.class,
                                                                 SnapshotImpl.class,
                                                                 RecipeImpl.class,
-                                                                SshPairImpl.class)
+                                                                SshPairImpl.class,
+                                                                SystemPropertyImpl.class)
                                               .addEntityClass("org.eclipse.che.api.workspace.server.model.impl.ProjectConfigImpl$Attribute")
                                               .build());
         bind(TckResourcesCleaner.class).to(JpaCleaner.class);
@@ -159,6 +163,11 @@ public class PostgreSqlTckModule extends TckModule {
         bind(StackDao.class).to(JpaStackDao.class);
         bind(new TypeLiteral<TckRepository<WorkspaceImpl>>() {}).toInstance(new WorkspaceRepository());
         bind(new TypeLiteral<TckRepository<StackImpl>>() {}).toInstance(new StackRepository());
+
+        // system
+        bind(SystemPropertyDao.class).to(JpaSystemPropertyDao.class);
+        bind(new TypeLiteral<TckRepository<SystemPropertyImpl>>() {})
+                .toInstance(new JpaTckRepository<>(SystemPropertyImpl.class));
     }
 
     private static void waitConnectionIsEstablished(String dbUrl, String dbUser, String dbPassword) {

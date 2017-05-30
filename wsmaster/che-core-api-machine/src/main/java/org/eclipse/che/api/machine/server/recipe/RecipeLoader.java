@@ -28,16 +28,19 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.PostConstruct;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 
 /**
@@ -107,16 +110,13 @@ public class RecipeLoader {
      * when failed to obtain recipes by given path
      */
     private List<RecipeImpl> loadRecipes(String recipesPath) {
-        try (InputStream is = getResource(recipesPath)) {
-            final List<RecipeImpl> recipes = GSON.fromJson(new InputStreamReader(is),
-                                                           new TypeToken<List<RecipeImpl>>() {}.getType());
-            if (recipes != null) {
-                return recipes;
-            }
+        final List<RecipeImpl> recipes = new ArrayList<>();
+        try (Reader reader = getResourceReader(recipesPath)) {
+            recipes.addAll(GSON.fromJson(reader, new TypeToken<List<RecipeImpl>>() {}.getType()));
         } catch (IOException | JsonParseException ex) {
             LOG.error("Failed to deserialize recipes from specified path " + recipesPath, ex);
         }
-        return emptyList();
+        return recipes;
     }
 
     /**
@@ -128,19 +128,19 @@ public class RecipeLoader {
      * @throws IOException
      *         when problem occurs during resource getting
      */
-    private InputStream getResource(String resource) throws IOException {
-        final File resourceFile = new File(resource);
-        if (resourceFile.exists() && !resourceFile.isFile()) {
-            throw new IOException(String.format("%s is not a file. ", resourceFile.getAbsolutePath()));
+    private Reader getResourceReader(String resource) throws IOException {
+        final Path path = Paths.get(resource);
+        if (Files.isRegularFile(path)) {
+            return Files.newBufferedReader(path);
+        } else {
+            final InputStream is = Thread.currentThread()
+                                   .getContextClassLoader()
+                                   .getResourceAsStream(resource);
+            if (is == null) {
+                throw new IOException(String.format("Not found resource: %s", resource));
+            }
+            return new BufferedReader(new InputStreamReader(is));
         }
-        final InputStream is = resourceFile.exists() ? new FileInputStream(resourceFile)
-                                                     : Thread.currentThread()
-                                                             .getContextClassLoader()
-                                                             .getResourceAsStream(resource);
-        if (is == null) {
-            throw new IOException(String.format("Not found resource: %s", resource));
-        }
-        return is;
     }
 
 }
