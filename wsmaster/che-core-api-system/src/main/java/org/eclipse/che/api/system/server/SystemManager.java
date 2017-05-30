@@ -36,6 +36,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.lang.System.currentTimeMillis;
+import static java.util.Objects.requireNonNull;
 import static org.eclipse.che.api.system.shared.SystemStatus.PREPARING_TO_SHUTDOWN;
 import static org.eclipse.che.api.system.shared.SystemStatus.READY_TO_SHUTDOWN;
 import static org.eclipse.che.api.system.shared.SystemStatus.RUNNING;
@@ -105,11 +106,13 @@ public class SystemManager {
      * @param value
      *         system property value
      * @throws NullPointerException
-     *         when property {@code name} is not specified
+     *         when property {@code name} or {@code value} is not specified
      * @throws ServerException
      *         when any other error occurs during property setup
      */
     public void setSystemProperty(String name, String value) throws ServerException {
+        requireNonNull(name, "Required non-null system property name");
+        requireNonNull(value, "Required non-null system property value");
         systemDao.saveProperty(new SystemPropertyImpl(name, value, currentTimeMillis()));
     }
 
@@ -127,6 +130,7 @@ public class SystemManager {
      *         when any other error occurs during property fetching
      */
     public SystemProperty getSystemProperty(String name) throws NotFoundException, ServerException {
+        requireNonNull(name, "Required non-null system property name");
         return systemDao.getProperty(name);
     }
 
@@ -135,10 +139,13 @@ public class SystemManager {
      *
      * @param name
      *         system property name
+     * @throws NullPointerException
+     *         when property {@code name} is not specified
      * @throws ServerException
      *         when any other error occurs during property removing
      */
     public void removeSystemProperty(String name) throws ServerException {
+        requireNonNull(name, "Required non-null system property name");
         systemDao.removeProperty(name);
     }
 
