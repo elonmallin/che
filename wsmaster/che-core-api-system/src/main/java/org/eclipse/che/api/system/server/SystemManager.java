@@ -22,7 +22,7 @@ import org.eclipse.che.api.system.shared.SystemStatus;
 import org.eclipse.che.api.system.shared.event.SystemStatusChangedEvent;
 import org.eclipse.che.commons.lang.concurrent.LoggingUncaughtExceptionHandler;
 import org.eclipse.che.commons.lang.concurrent.ThreadLocalPropagateContext;
-import org.eclipse.che.spi.system.server.SystemDao;
+import org.eclipse.che.spi.system.server.SystemPropertyDao;
 import org.eclipse.che.spi.system.server.model.impl.SystemPropertyImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,17 +54,17 @@ public class SystemManager {
     private final AtomicReference<SystemStatus> statusRef;
     private final EventService                  eventService;
     private final ServiceTerminator             terminator;
-    private final SystemDao                     systemDao;
+    private final SystemPropertyDao             systemPropertyDao;
 
     private final CountDownLatch shutdownLatch = new CountDownLatch(1);
 
     @Inject
     public SystemManager(ServiceTerminator terminator,
                          EventService eventService,
-                         SystemDao systemDao) {
+                         SystemPropertyDao systemPropertyDao) {
         this.terminator = terminator;
         this.eventService = eventService;
-        this.systemDao = systemDao;
+        this.systemPropertyDao = systemPropertyDao;
         this.statusRef = new AtomicReference<>(RUNNING);
     }
 
@@ -113,7 +113,7 @@ public class SystemManager {
     public void setSystemProperty(String name, String value) throws ServerException {
         requireNonNull(name, "Required non-null system property name");
         requireNonNull(value, "Required non-null system property value");
-        systemDao.saveProperty(new SystemPropertyImpl(name, value, currentTimeMillis()));
+        systemPropertyDao.save(new SystemPropertyImpl(name, value, currentTimeMillis()));
     }
 
     /**
@@ -131,7 +131,7 @@ public class SystemManager {
      */
     public SystemProperty getSystemProperty(String name) throws NotFoundException, ServerException {
         requireNonNull(name, "Required non-null system property name");
-        return systemDao.getProperty(name);
+        return systemPropertyDao.get(name);
     }
 
     /**
@@ -146,7 +146,7 @@ public class SystemManager {
      */
     public void removeSystemProperty(String name) throws ServerException {
         requireNonNull(name, "Required non-null system property name");
-        systemDao.removeProperty(name);
+        systemPropertyDao.remove(name);
     }
 
     /** Synchronously stops corresponding services. */

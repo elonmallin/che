@@ -12,7 +12,7 @@ package org.eclipse.che.spi.system.server.jpa;
 
 import com.google.inject.AbstractModule;
 
-import org.eclipse.che.spi.system.server.SystemDao;
+import org.eclipse.che.spi.system.server.SystemPropertyDao;
 
 /**
  * @author Anton Korneta
@@ -21,6 +21,6 @@ public class SystemJpaModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(SystemDao.class).to(JpaSystemDao.class);
+        bind(SystemPropertyDao.class).to(JpaSystemPropertyDao.class);
     }
 }

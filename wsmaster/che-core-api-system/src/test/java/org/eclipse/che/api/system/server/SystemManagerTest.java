@@ -13,7 +13,7 @@ package org.eclipse.che.api.system.server;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.system.shared.event.SystemStatusChangedEvent;
-import org.eclipse.che.spi.system.server.SystemDao;
+import org.eclipse.che.spi.system.server.SystemPropertyDao;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -45,7 +45,7 @@ public class SystemManagerTest {
     private ServiceTerminator terminator;
 
     @Mock
-    private SystemDao systemDao;
+    private SystemPropertyDao systemPropertyDao;
 
     @Mock
     private EventService eventService;
@@ -58,7 +58,7 @@ public class SystemManagerTest {
     @BeforeMethod
     public void init() {
         MockitoAnnotations.initMocks(this);
-        systemManager = new SystemManager(terminator, eventService, systemDao);
+        systemManager = new SystemManager(terminator, eventService, systemPropertyDao);
     }
 
     @Test

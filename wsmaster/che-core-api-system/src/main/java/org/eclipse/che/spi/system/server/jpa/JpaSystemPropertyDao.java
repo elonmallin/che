@@ -16,7 +16,7 @@ import com.google.inject.persist.Transactional;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.notification.EventService;
-import org.eclipse.che.spi.system.server.SystemDao;
+import org.eclipse.che.spi.system.server.SystemPropertyDao;
 import org.eclipse.che.spi.system.server.model.impl.SystemPropertyImpl;
 
 import javax.inject.Inject;
@@ -27,12 +27,12 @@ import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
 /**
- * JPA based implementation of {@link SystemDao}.
+ * JPA based implementation of {@link SystemPropertyDao}.
  *
  * @author Anton Korneta
  */
 @Singleton
-public class JpaSystemDao implements SystemDao {
+public class JpaSystemPropertyDao implements SystemPropertyDao {
 
     @Inject
     private EventService            eventService;
@@ -40,7 +40,7 @@ public class JpaSystemDao implements SystemDao {
     private Provider<EntityManager> managerProvider;
 
     @Override
-    public void saveProperty(SystemPropertyImpl property) throws ServerException {
+    public void save(SystemPropertyImpl property) throws ServerException {
         requireNonNull(property);
         try {
             doCreate(property);
@@ -50,7 +50,7 @@ public class JpaSystemDao implements SystemDao {
     }
 
     @Override
-    public void removeProperty(String name) throws ServerException {
+    public void remove(String name) throws ServerException {
         requireNonNull(name);
         try {
             doRemove(name);
@@ -61,7 +61,7 @@ public class JpaSystemDao implements SystemDao {
 
     @Override
     @Transactional
-    public SystemPropertyImpl getProperty(String name) throws NotFoundException, ServerException {
+    public SystemPropertyImpl get(String name) throws NotFoundException, ServerException {
         requireNonNull(name);
         try {
             final EntityManager manager = managerProvider.get();

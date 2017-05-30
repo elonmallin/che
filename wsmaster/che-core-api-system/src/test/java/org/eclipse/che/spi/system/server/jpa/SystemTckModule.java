@@ -23,7 +23,7 @@ import org.eclipse.che.core.db.DBInitializer;
 import org.eclipse.che.core.db.h2.jpa.eclipselink.H2ExceptionHandler;
 import org.eclipse.che.core.db.schema.SchemaInitializer;
 import org.eclipse.che.core.db.schema.impl.flyway.FlywaySchemaInitializer;
-import org.eclipse.che.spi.system.server.SystemDao;
+import org.eclipse.che.spi.system.server.SystemPropertyDao;
 import org.eclipse.che.spi.system.server.model.impl.SystemPropertyImpl;
 import org.h2.Driver;
 
@@ -47,7 +47,7 @@ public class SystemTckModule extends TckModule {
         bind(new TypeLiteral<TckRepository<SystemPropertyImpl>>() {})
                 .toInstance(new JpaTckRepository<>(SystemPropertyImpl.class));
 
-        bind(SystemDao.class).to(JpaSystemDao.class);
+        bind(SystemPropertyDao.class).to(JpaSystemPropertyDao.class);
     }
 
 }

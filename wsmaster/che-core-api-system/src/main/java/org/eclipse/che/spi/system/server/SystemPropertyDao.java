@@ -19,7 +19,7 @@ import org.eclipse.che.spi.system.server.model.impl.SystemPropertyImpl;
  *
  * @author Anton Korneta
  */
-public interface SystemDao {
+public interface SystemPropertyDao {
 
     /**
      * Saves system properties.
@@ -29,11 +29,11 @@ public interface SystemDao {
      * @param property
      *         system property to set
      * @throws NullPointerException
-     *         when property {@code name} is not specified
+     *         when property {@code property} is not specified
      * @throws ServerException
      *         when any other error occurs during property setup
      */
-    void saveProperty(SystemPropertyImpl property) throws ServerException;
+    void save(SystemPropertyImpl property) throws ServerException;
 
     /**
      * Removes system property by name.
@@ -45,7 +45,7 @@ public interface SystemDao {
      * @throws ServerException
      *         when any other error occurs during property removing
      */
-    void removeProperty(String name) throws ServerException;
+    void remove(String name) throws ServerException;
 
     /**
      * Gets system property by name.
@@ -60,6 +60,6 @@ public interface SystemDao {
      * @throws ServerException
      *         when any other error occurs during property fetching
      */
-    SystemPropertyImpl getProperty(String name) throws NotFoundException, ServerException;
+    SystemPropertyImpl get(String name) throws NotFoundException, ServerException;
 
 }

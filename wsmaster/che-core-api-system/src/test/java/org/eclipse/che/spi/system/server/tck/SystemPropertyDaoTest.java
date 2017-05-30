@@ -14,7 +14,7 @@ import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.commons.test.tck.TckListener;
 import org.eclipse.che.commons.test.tck.repository.TckRepository;
 import org.eclipse.che.commons.test.tck.repository.TckRepositoryException;
-import org.eclipse.che.spi.system.server.SystemDao;
+import org.eclipse.che.spi.system.server.SystemPropertyDao;
 import org.eclipse.che.spi.system.server.model.impl.SystemPropertyImpl;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -28,13 +28,13 @@ import static java.lang.System.currentTimeMillis;
 import static org.testng.Assert.assertEquals;
 
 /**
- * Tests {@link SystemDao} contract.
+ * Tests {@link SystemPropertyDao} contract.
  *
  * @author Anton Korneta
  */
 @Listeners(TckListener.class)
-@Test(suiteName = SystemDaoTest.SUITE_NAME)
-public class SystemDaoTest {
+@Test(suiteName = SystemPropertyDaoTest.SUITE_NAME)
+public class SystemPropertyDaoTest {
 
     public static final String SUITE_NAME = "SystemDaoTck";
 
@@ -44,7 +44,7 @@ public class SystemDaoTest {
     private TckRepository<SystemPropertyImpl> systemRepo;
 
     @Inject
-    private SystemDao systemDao;
+    private SystemPropertyDao systemPropertyDao;
 
     private SystemPropertyImpl[] systemProperties;
 
@@ -67,49 +67,49 @@ public class SystemDaoTest {
     }
 
     @Test(expectedExceptions = NullPointerException.class)
-    public void throwNpeWhenSystemPropertyToSaveIsNull() throws Exception {
-        systemDao.saveProperty(null);
+    public void throwsNpeWhenSystemPropertyToSaveIsNull() throws Exception {
+        systemPropertyDao.save(null);
     }
 
     @Test
     public void savesNewSystemProperty() throws Exception {
-        systemDao.saveProperty(new SystemPropertyImpl("test", "test", 3L));
+        systemPropertyDao.save(new SystemPropertyImpl("test", "test", 3L));
     }
 
     @Test(expectedExceptions = NullPointerException.class)
     public void throwsNpeWhenSystemPropertyNameToRemoveIsNull() throws Exception {
-        systemDao.removeProperty(null);
+        systemPropertyDao.remove(null);
     }
 
     @Test(dependsOnMethods = "getsSystemProperty", expectedExceptions = NotFoundException.class)
     public void removesSystemProperty() throws Exception {
         final String name = systemProperties[0].getName();
 
-        systemDao.removeProperty(name);
-        systemDao.getProperty(name);
+        systemPropertyDao.remove(name);
+        systemPropertyDao.get(name);
     }
 
     @Test(dependsOnMethods = "getsSystemProperty")
     public void updatesSystemPropertyWhenPropertyWithGivenNameAlreadyExists() throws Exception {
-        systemDao.saveProperty(new SystemPropertyImpl(systemProperties[0].getName(), "test", 3L));
+        systemPropertyDao.save(new SystemPropertyImpl(systemProperties[0].getName(), "test", 3L));
     }
 
 
     @Test(expectedExceptions = NullPointerException.class)
     public void throwsNpeWhenGettingSystemPropertyByNullName() throws Exception {
-        systemDao.getProperty(null);
+        systemPropertyDao.get(null);
     }
 
     @Test(expectedExceptions = NotFoundException.class)
     public void throwsNotFoundExceptionWhenGettingNonExistingProperty() throws Exception {
-        systemDao.getProperty("non-existing");
+        systemPropertyDao.get("non-existing");
     }
 
     @Test
     public void getsSystemProperty() throws Exception {
         final SystemPropertyImpl systemProperty = systemProperties[0];
 
-        assertEquals(systemProperty, systemDao.getProperty(systemProperties[0].getName()));
+        assertEquals(systemProperty, systemPropertyDao.get(systemProperties[0].getName()));
     }
 
 }
