@@ -51,18 +51,13 @@ public class DefaultTextEditorConfiguration implements TextEditorConfiguration {
 
     @Override
     public Reconciler getReconciler() {
-        if (reconciler == null) {
-            reconciler = new DefaultReconciler(DEFAULT_CONTENT_TYPE, getPartitioner());
-        }
-        return reconciler;
+        return reconciler == null ? reconciler = new DefaultReconciler(DEFAULT_CONTENT_TYPE, getPartitioner()) : reconciler;
+
     }
 
     @Override
     public DocumentPartitioner getPartitioner() {
-        if (partitioner == null) {
-            partitioner = new ConstantPartitioner();
-        }
-        return partitioner;
+        return partitioner == null ? partitioner = new ConstantPartitioner() : partitioner;
     }
 
     @Override

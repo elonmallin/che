@@ -208,11 +208,7 @@ public class EditorPreferencesManager {
     }
 
     public JSONValue getJsonValueFor(EditorProperties property) {
-        if (property == null) {
-            return null;
-        }
-
-        return getEditorPreferences().get(property.toString());
+        return property != null ? getEditorPreferences().get(property.toString()) : null;
     }
 
     public Integer getNumberValueFor(EditorProperties property) {
