@@ -11,6 +11,8 @@
 package org.eclipse.che.api.system.shared;
 
 /**
+ * defines a pair of name to value which represents system properties.
+ *
  * @author Anton Korneta
  */
 public interface SystemProperty {
