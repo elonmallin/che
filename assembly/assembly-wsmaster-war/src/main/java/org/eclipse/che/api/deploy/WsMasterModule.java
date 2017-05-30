@@ -34,6 +34,7 @@ import org.eclipse.che.api.factory.server.FactoryCreateValidator;
 import org.eclipse.che.api.factory.server.FactoryEditValidator;
 import org.eclipse.che.api.factory.server.FactoryParametersResolver;
 import org.eclipse.che.api.machine.shared.Constants;
+import org.eclipse.che.api.system.server.ServiceTermination;
 import org.eclipse.che.api.user.server.TokenValidator;
 import org.eclipse.che.api.workspace.server.WorkspaceConfigMessageBodyAdapter;
 import org.eclipse.che.api.workspace.server.WorkspaceMessageBodyAdapter;
@@ -55,11 +56,13 @@ public class WsMasterModule extends AbstractModule {
     protected void configure() {
         // db related components modules
         install(new com.google.inject.persist.jpa.JpaPersistModule("main"));
+        install(new org.eclipse.che.spi.system.server.jpa.SystemJpaModule());
         install(new org.eclipse.che.account.api.AccountModule());
         install(new org.eclipse.che.api.user.server.jpa.UserJpaModule());
         install(new org.eclipse.che.api.ssh.server.jpa.SshJpaModule());
         install(new org.eclipse.che.api.machine.server.jpa.MachineJpaModule());
         install(new org.eclipse.che.api.workspace.server.jpa.WorkspaceJpaModule());
+
         install(new org.eclipse.che.api.core.jsonrpc.impl.JsonRpcModule());
         install(new org.eclipse.che.api.core.websocket.impl.WebSocketModule());
 
@@ -210,5 +213,9 @@ public class WsMasterModule extends AbstractModule {
 
         bind(org.eclipse.che.api.agent.server.filters.AddExecAgentInWorkspaceFilter.class);
         bind(org.eclipse.che.api.agent.server.filters.AddExecAgentInStackFilter.class);
+
+        Multibinder.newSetBinder(binder(), ServiceTermination.class)
+                   .addBinding()
+                   .to(org.eclipse.che.api.workspace.server.WorkspaceServiceTermination.class);
     }
 }

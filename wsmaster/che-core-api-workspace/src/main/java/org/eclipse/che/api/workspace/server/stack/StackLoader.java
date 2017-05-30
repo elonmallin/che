@@ -13,22 +13,23 @@ package org.eclipse.che.api.workspace.server.stack;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.core.db.DBInitializer;
+import org.eclipse.che.api.system.server.SystemManager;
 import org.eclipse.che.api.workspace.server.model.impl.stack.StackImpl;
 import org.eclipse.che.api.workspace.server.spi.StackDao;
 import org.eclipse.che.api.workspace.server.stack.image.StackIcon;
 import org.eclipse.che.api.workspace.shared.stack.Stack;
+import org.eclipse.che.core.db.DBInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -36,6 +37,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
 
 /**
@@ -46,24 +48,29 @@ import static java.lang.String.format;
  */
 @Singleton
 public class StackLoader {
+
     private static final Logger LOG = LoggerFactory.getLogger(StackLoader.class);
 
-    private final Gson GSON;
+    private static final String STACKS_INITIALIZED = "public.stacks.initialized";
 
-    private final Path     stackJsonPath;
-    private final Path     stackIconFolderPath;
-    private final StackDao stackDao;
+    protected final Path     stackIconFolderPath;
+    protected final StackDao stackDao;
+
+    private final Gson          GSON;
+    private final Path          stackJsonPath;
+    private final SystemManager systemManager;
 
     @Inject
     @SuppressWarnings("unused")
     public StackLoader(@Named("che.stacks.storage") String stacksPath,
                        @Named("che.stacks.images") String stackIconFolder,
                        StackDao stackDao,
-                       DBInitializer dbInitializer) {
+                       DBInitializer dbInitializer,
+                       SystemManager systemManager) {
         this.stackJsonPath = Paths.get(stacksPath);
         this.stackIconFolderPath = Paths.get(stackIconFolder);
         this.stackDao = stackDao;
-
+        this.systemManager = systemManager;
         GSON = new GsonBuilder().create();
     }
 
@@ -72,17 +79,24 @@ public class StackLoader {
      */
     @PostConstruct
     public void start() {
-        if (Files.exists(stackJsonPath) && Files.isRegularFile(stackJsonPath)) {
-            try (BufferedReader reader = Files.newBufferedReader(stackJsonPath)) {
-                List<StackImpl> stacks = GSON.fromJson(reader, new TypeToken<List<StackImpl>>() {}.getType());
-                stacks.forEach(this::loadStack);
-            } catch (Exception e) {
-                LOG.error("Failed to store stacks ", e);
+        try {
+            systemManager.getSystemProperty(STACKS_INITIALIZED);
+        } catch (NotFoundException ex) {
+            if (Files.exists(stackJsonPath) && Files.isRegularFile(stackJsonPath)) {
+                try (BufferedReader reader = Files.newBufferedReader(stackJsonPath)) {
+                    List<StackImpl> stacks = GSON.fromJson(reader, new TypeToken<List<StackImpl>>() {}.getType());
+                    stacks.forEach(this::loadStack);
+                    systemManager.setSystemProperty(STACKS_INITIALIZED, TRUE.toString());
+                } catch (Exception e) {
+                    LOG.error("Failed to store stacks ", ex);
+                }
             }
+        } catch (ServerException ex) {
+            LOG.error("Failed to retrieve state for public stacks", ex);
         }
     }
 
-    private void loadStack(StackImpl stack) {
+    protected void loadStack(StackImpl stack) {
         setIconData(stack, stackIconFolderPath);
 
         try {
@@ -96,7 +110,7 @@ public class StackLoader {
         }
     }
 
-    private void setIconData(StackImpl stack, Path stackIconFolderPath) {
+    protected void setIconData(StackImpl stack, Path stackIconFolderPath) {
         StackIcon stackIcon = stack.getStackIcon();
         if (stackIcon == null) {
             return;

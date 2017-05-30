@@ -20,7 +20,7 @@ import org.eclipse.che.api.system.shared.event.service.SystemServiceStoppedEvent
  *
  * @author Yevhenii Voevodin
  */
-interface ServiceTermination {
+public interface ServiceTermination {
 
     /**
      * Terminates a certain service.

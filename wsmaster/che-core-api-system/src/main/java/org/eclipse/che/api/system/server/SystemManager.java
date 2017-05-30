@@ -14,11 +14,16 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.eclipse.che.api.core.ConflictException;
+import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.notification.EventService;
+import org.eclipse.che.api.system.shared.SystemProperty;
 import org.eclipse.che.api.system.shared.SystemStatus;
 import org.eclipse.che.api.system.shared.event.SystemStatusChangedEvent;
 import org.eclipse.che.commons.lang.concurrent.LoggingUncaughtExceptionHandler;
 import org.eclipse.che.commons.lang.concurrent.ThreadLocalPropagateContext;
+import org.eclipse.che.spi.system.server.SystemDao;
+import org.eclipse.che.spi.system.server.model.impl.SystemPropertyImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +35,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static java.lang.System.currentTimeMillis;
 import static org.eclipse.che.api.system.shared.SystemStatus.PREPARING_TO_SHUTDOWN;
 import static org.eclipse.che.api.system.shared.SystemStatus.READY_TO_SHUTDOWN;
 import static org.eclipse.che.api.system.shared.SystemStatus.RUNNING;
@@ -47,13 +53,17 @@ public class SystemManager {
     private final AtomicReference<SystemStatus> statusRef;
     private final EventService                  eventService;
     private final ServiceTerminator             terminator;
+    private final SystemDao                     systemDao;
 
     private final CountDownLatch shutdownLatch = new CountDownLatch(1);
 
     @Inject
-    public SystemManager(ServiceTerminator terminator, EventService eventService) {
+    public SystemManager(ServiceTerminator terminator,
+                         EventService eventService,
+                         SystemDao systemDao) {
         this.terminator = terminator;
         this.eventService = eventService;
+        this.systemDao = systemDao;
         this.statusRef = new AtomicReference<>(RUNNING);
     }
 
@@ -85,6 +95,51 @@ public class SystemManager {
      */
     public SystemStatus getSystemStatus() {
         return statusRef.get();
+    }
+
+    /**
+     * Saves (inserts or updates) system properties.
+     *
+     * @param name
+     *         system property name
+     * @param value
+     *         system property value
+     * @throws NullPointerException
+     *         when property {@code name} is not specified
+     * @throws ServerException
+     *         when any other error occurs during property setup
+     */
+    public void setSystemProperty(String name, String value) throws ServerException {
+        systemDao.saveProperty(new SystemPropertyImpl(name, value, currentTimeMillis()));
+    }
+
+    /**
+     * Gets system property by name
+     *
+     * @param name
+     *         system property name
+     * @return property with specified {@code name}
+     * @throws NullPointerException
+     *         when property {@code name} is not specified
+     * @throws NotFoundException
+     *         when property with specified {@code name} doesn't exist
+     * @throws ServerException
+     *         when any other error occurs during property fetching
+     */
+    public SystemProperty getSystemProperty(String name) throws NotFoundException, ServerException {
+        return systemDao.getProperty(name);
+    }
+
+    /**
+     * Removes system property by name.
+     *
+     * @param name
+     *         system property name
+     * @throws ServerException
+     *         when any other error occurs during property removing
+     */
+    public void removeSystemProperty(String name) throws ServerException {
+        systemDao.removeProperty(name);
     }
 
     /** Synchronously stops corresponding services. */

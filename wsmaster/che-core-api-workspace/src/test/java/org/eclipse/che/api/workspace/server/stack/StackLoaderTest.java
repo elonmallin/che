@@ -19,6 +19,7 @@ import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.machine.shared.dto.CommandDto;
+import org.eclipse.che.api.system.server.SystemManager;
 import org.eclipse.che.api.workspace.server.model.impl.stack.StackImpl;
 import org.eclipse.che.api.workspace.server.spi.StackDao;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
@@ -46,10 +47,12 @@ import java.util.Map;
 import static java.util.Collections.singletonMap;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests for {@link StackLoader}
@@ -62,14 +65,18 @@ public class StackLoaderTest {
     @Mock
     private StackDao stackDao;
 
+    @Mock
+    private SystemManager systemManager;
+
     private StackLoader stackLoader;
 
     @Test
-    public void predefinedStackWithValidJsonShouldBeUpdated() throws ServerException, NotFoundException, ConflictException {
+    public void predefinedStackWithValidJsonShouldBeUpdated() throws Exception {
         URL url = Resources.getResource("stacks.json");
         URL urlFolder = Thread.currentThread().getContextClassLoader().getResource("stack_img");
+        when(systemManager.getSystemProperty(anyString())).thenThrow(new NotFoundException("not found"));
 
-        stackLoader = new StackLoader(url.getPath(), urlFolder.getPath(), stackDao, null);
+        stackLoader = new StackLoader(url.getPath(), urlFolder.getPath(), stackDao, null, systemManager);
 
         stackLoader.start();
         verify(stackDao, times(5)).update(any());
@@ -77,13 +84,13 @@ public class StackLoaderTest {
     }
 
     @Test
-    public void predefinedStackWithValidJsonShouldBeCreated() throws ServerException, NotFoundException, ConflictException {
+    public void predefinedStackWithValidJsonShouldBeCreated() throws Exception {
         URL url = Resources.getResource("stacks.json");
         URL urlFolder = Thread.currentThread().getContextClassLoader().getResource("stack_img");
-
+        when(systemManager.getSystemProperty(anyString())).thenThrow(new NotFoundException("not found"));
         doThrow(new NotFoundException("Stack is already exist")).when(stackDao).update(any());
 
-        stackLoader = new StackLoader(url.getPath(), urlFolder.getPath(), stackDao, null);
+        stackLoader = new StackLoader(url.getPath(), urlFolder.getPath(), stackDao, null, systemManager);
 
         stackLoader.start();
         verify(stackDao, times(5)).update(any());
@@ -91,13 +98,13 @@ public class StackLoaderTest {
     }
 
     @Test
-    public void predefinedStackWithValidJsonShouldBeCreated2() throws ServerException, NotFoundException, ConflictException {
+    public void predefinedStackWithValidJsonShouldBeCreated2() throws Exception {
         URL url = Resources.getResource("stacks.json");
         URL urlFolder = Thread.currentThread().getContextClassLoader().getResource("stack_img");
-
+        when(systemManager.getSystemProperty(anyString())).thenThrow(new NotFoundException("not found"));
         doThrow(new ServerException("Internal server error")).when(stackDao).update(any());
 
-        stackLoader = new StackLoader(url.getPath(), urlFolder.getPath(), stackDao, null);
+        stackLoader = new StackLoader(url.getPath(), urlFolder.getPath(), stackDao, null, systemManager);
 
         stackLoader.start();
         verify(stackDao, times(5)).update(any());
@@ -105,8 +112,9 @@ public class StackLoaderTest {
     }
 
     @Test
-    public void dtoShouldBeSerialized() {
+    public void dtoShouldBeSerialized() throws Exception {
         StackDto stackDtoDescriptor = newDto(StackDto.class).withName("nameWorkspaceConfig");
+        when(systemManager.getSystemProperty(anyString())).thenThrow(new NotFoundException("not found"));
         StackComponentDto stackComponentDto = newDto(StackComponentDto.class)
                 .withName("java")
                 .withVersion("1.8");

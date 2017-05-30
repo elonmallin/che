@@ -52,6 +52,8 @@
 
         <class>org.eclipse.che.api.ssh.server.model.impl.SshPairImpl</class>
 
+        <class>org.eclipse.che.spi.system.server.model.impl.SystemPropertyImpl</class>
+
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <property name="eclipselink.exception-handler" value="org.eclipse.che.core.db.h2.jpa.eclipselink.H2ExceptionHandler"/>
